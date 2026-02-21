@@ -349,6 +349,27 @@
       position:absolute; width:1px; height:1px; padding:0; margin:-1px;
       overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
     }
+    .comments-wrap{
+      padding:0 28px 28px;
+      position:relative;
+      z-index:1;
+    }
+    .comments-panel{
+      background:var(--card);
+      border-radius:var(--radius);
+      padding:18px;
+      border:1px solid var(--panel-border);
+    }
+    .comments-panel h2{
+      margin:0 0 8px;
+      font-size:18px;
+      color:var(--ink);
+    }
+    .comments-help{
+      margin:0 0 14px;
+      color:var(--muted);
+      font-size:13px;
+    }
     @media (max-width: 900px){
       .content{grid-template-columns: 1fr}
       .title{font-size:30px}
@@ -430,7 +451,32 @@
         <span class="sr-only" id="copyStatus" aria-live="polite"></span>
       </section>
     </section>
+
+    <section class="comments-wrap" aria-label="댓글">
+      <div class="comments-panel">
+        <h2>댓글</h2>
+        <p class="comments-help">의견이나 개선 아이디어를 남겨주세요.</p>
+        <div id="disqus_thread"></div>
+      </div>
+    </section>
   </main>
+
+  <script>
+    var disqus_config = function () {
+      this.page.url = window.location.origin + window.location.pathname;
+      this.page.identifier = "lotto-home";
+    };
+    (function() {
+      var d = document, s = d.createElement("script");
+      s.src = "https://dotomni.disqus.com/embed.js";
+      s.setAttribute("data-timestamp", +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  </script>
+  <noscript>
+    Please enable JavaScript to view the
+    <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
 
   <script>
     function pickOneSet() {
