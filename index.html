@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>로또번호 추첨소</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=SUIT:wght@300;400;600;800&display=swap");
+
+    :root{
+      --bg:#101318;
+      --ink:#0f151a;
+      --card:#f6f1e9;
+      --accent:#ff7a1a;
+      --accent-2:#0f8f6a;
+      --accent-3:#e54b4b;
+      --text:#0f151a;
+      --muted:#4f5b66;
+      --line:#1b2630;
+      --shadow:0 18px 40px rgba(0,0,0,.25);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      color:var(--text);
+      font-family:"SUIT", "Noto Sans KR", system-ui, sans-serif;
+      background:
+        radial-gradient(1200px 700px at 10% 0%, #2a4b77 0%, transparent 60%),
+        radial-gradient(900px 500px at 85% 100%, #2d7a5f 0%, transparent 55%),
+        repeating-linear-gradient(135deg, rgba(255,255,255,.06) 0 12px, rgba(255,255,255,0) 12px 24px),
+        var(--bg);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:32px 16px 44px;
+    }
+    .frame{
+      width:min(980px, 96vw);
+      background:linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.86));
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      border:1px solid rgba(255,255,255,.5);
+      overflow:hidden;
+      position:relative;
+    }
+    .frame::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(240px 140px at 90% 0%, rgba(255,122,26,.2), transparent 60%),
+        radial-gradient(300px 220px at 0% 100%, rgba(15,143,106,.18), transparent 60%);
+      pointer-events:none;
+    }
+    header{
+      padding:28px 28px 18px;
+      border-bottom:1px solid rgba(0,0,0,.08);
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      position:relative;
+      z-index:1;
+    }
+    .title{
+      font-family:"Black Han Sans", "Noto Sans KR", system-ui, sans-serif;
+      font-size:36px;
+      letter-spacing:.5px;
+      margin:0;
+    }
+    .subtitle{
+      margin:0;
+      color:var(--muted);
+      font-size:15px;
+    }
+    .meta{
+      display:flex;
+      gap:16px;
+      flex-wrap:wrap;
+      align-items:center;
+      color:var(--muted);
+      font-size:13px;
+    }
+    .meta strong{color:var(--text)}
+    .content{
+      display:grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap:20px;
+      padding:24px 28px 28px;
+      position:relative;
+      z-index:1;
+    }
+    .panel{
+      background:var(--card);
+      border-radius:var(--radius);
+      padding:18px;
+      border:1px solid rgba(0,0,0,.08);
+      display:grid;
+      gap:16px;
+      align-content:start;
+    }
+    .panel h2{
+      margin:0;
+      font-size:18px;
+      color:var(--ink);
+    }
+    .controls{
+      display:grid;
+      gap:12px;
+    }
+    .control-row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    label{
+      font-size:13px;
+      color:var(--muted);
+    }
+    select, input[type="number"]{
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(0,0,0,.15);
+      background:#fff;
+      font-weight:600;
+    }
+    .btn-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    button{
+      border:0;
+      border-radius:14px;
+      padding:12px 16px;
+      font-weight:800;
+      cursor:pointer;
+      transition:transform .08s ease, filter .2s ease;
+    }
+    button:active{transform:translateY(1px)}
+    .primary{
+      background:linear-gradient(135deg, var(--accent), #ffb340);
+      color:#1b1309;
+    }
+    .secondary{
+      background:#141a20;
+      color:#fff;
+    }
+    .ghost{
+      background:transparent;
+      border:1px solid rgba(0,0,0,.2);
+      color:#1b1f23;
+    }
+    button:disabled{
+      opacity:.5;
+      cursor:not-allowed;
+    }
+    .note{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+    .result-board{
+      background:#12161c;
+      color:#f5f7fa;
+      border-radius:var(--radius);
+      padding:16px;
+      border:1px solid rgba(255,255,255,.12);
+      min-height:320px;
+      display:grid;
+      gap:12px;
+    }
+    .result-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      font-size:13px;
+      color:rgba(255,255,255,.7);
+    }
+    .sets{
+      display:grid;
+      gap:12px;
+    }
+    .set{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      padding:12px;
+      border-radius:14px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+    }
+    .set-title{
+      min-width:64px;
+      font-weight:800;
+      color:rgba(255,255,255,.8);
+      letter-spacing:.4px;
+      font-size:13px;
+    }
+    .ball{
+      width:44px;
+      height:44px;
+      display:grid;
+      place-items:center;
+      border-radius:999px;
+      font-weight:800;
+      font-size:15px;
+      color:#101318;
+      border:1px solid rgba(0,0,0,.12);
+      animation:pop .45s ease both;
+    }
+    .ball.yellow{background:linear-gradient(145deg, #ffda3a, #ffb703)}
+    .ball.blue{background:linear-gradient(145deg, #9ad3ff, #4ea3ff)}
+    .ball.red{background:linear-gradient(145deg, #ff9a9a, #ff4d4d)}
+    .ball.gray{background:linear-gradient(145deg, #d0d6dc, #9aa7b3)}
+    .ball.green{background:linear-gradient(145deg, #7ae7b7, #2ac47b)}
+
+    @keyframes pop{
+      0%{transform:scale(.6) translateY(6px); opacity:0}
+      100%{transform:scale(1) translateY(0); opacity:1}
+    }
+    .placeholder{
+      color:rgba(255,255,255,.55);
+      text-align:center;
+      padding:44px 0;
+      font-size:14px;
+    }
+    .stat-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.2);
+      color:rgba(255,255,255,.8);
+      font-size:12px;
+    }
+    .sr-only{
+      position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+      overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+    }
+    @media (max-width: 900px){
+      .content{grid-template-columns: 1fr}
+      .title{font-size:30px}
+    }
+  </style>
+</head>
+<body>
+  <main class="frame" role="main">
+    <header>
+      <h1 class="title">로또번호 추첨소</h1>
+      <p class="subtitle">6/45 룰 기반 자동 추첨. 버튼 한 번으로 원하는 세트 수를 생성합니다.</p>
+      <div class="meta">
+        <span>마지막 생성: <strong id="lastTime">-</strong></span>
+        <span class="stat-chip">정렬: 오름차순</span>
+        <span class="stat-chip">범위: 1 ~ 45</span>
+      </div>
+    </header>
+
+    <section class="content">
+      <section class="panel" aria-label="추첨 설정">
+        <h2>추첨 설정</h2>
+        <div class="controls">
+          <div class="control-row">
+            <label for="setCount">생성 세트</label>
+            <select id="setCount" aria-label="생성 세트">
+              <option value="1">1세트</option>
+              <option value="3">3세트</option>
+              <option value="5" selected>5세트</option>
+              <option value="7">7세트</option>
+              <option value="10">10세트</option>
+            </select>
+          </div>
+          <div class="btn-row">
+            <button id="btnPick" class="primary" type="button">추첨하기</button>
+            <button id="btnCopy" class="secondary" type="button" disabled>전체 복사</button>
+            <button id="btnReset" class="ghost" type="button">초기화</button>
+          </div>
+          <p class="note">
+            무작위 알고리즘으로 숫자를 선택합니다. 특정 번호의 출현을 보장하지 않으며, 실제 로또 결과와 무관합니다.
+          </p>
+        </div>
+      </section>
+
+      <section class="result-board" aria-live="polite" aria-label="추첨 결과">
+        <div class="result-header">
+          <span>추첨 결과</span>
+          <span id="countBadge">0세트</span>
+        </div>
+        <div id="sets" class="sets">
+          <div id="placeholder" class="placeholder">추첨 버튼을 누르면 번호가 표시됩니다.</div>
+        </div>
+        <span class="sr-only" id="copyStatus" aria-live="polite"></span>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    function pickOneSet() {
+      const set = new Set();
+      while (set.size < 6) {
+        set.add(Math.floor(Math.random() * 45) + 1);
+      }
+      return Array.from(set).sort((a, b) => a - b);
+    }
+
+    function pickSets(count) {
+      const sets = [];
+      for (let i = 0; i < count; i++) sets.push(pickOneSet());
+      return sets;
+    }
+
+    function formatTime(d = new Date()) {
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      const hh = String(d.getHours()).padStart(2, "0");
+      const mi = String(d.getMinutes()).padStart(2, "0");
+      const ss = String(d.getSeconds()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
+    }
+
+    function ballColor(n) {
+      if (n <= 10) return "yellow";
+      if (n <= 20) return "blue";
+      if (n <= 30) return "red";
+      if (n <= 40) return "gray";
+      return "green";
+    }
+
+    const btnPick = document.getElementById("btnPick");
+    const btnCopy = document.getElementById("btnCopy");
+    const btnReset = document.getElementById("btnReset");
+    const setsEl = document.getElementById("sets");
+    const placeholder = document.getElementById("placeholder");
+    const lastTime = document.getElementById("lastTime");
+    const copyStatus = document.getElementById("copyStatus");
+    const setCount = document.getElementById("setCount");
+    const countBadge = document.getElementById("countBadge");
+
+    let lastSets = null;
+
+    function renderSets(sets) {
+      setsEl.innerHTML = "";
+      sets.forEach((nums, idx) => {
+        const row = document.createElement("div");
+        row.className = "set";
+
+        const label = document.createElement("div");
+        label.className = "set-title";
+        label.textContent = `SET ${idx + 1}`;
+        row.appendChild(label);
+
+        nums.forEach((n, i) => {
+          const ball = document.createElement("div");
+          ball.className = `ball ${ballColor(n)}`;
+          ball.style.animationDelay = `${i * 40}ms`;
+          ball.textContent = n;
+          row.appendChild(ball);
+        });
+
+        setsEl.appendChild(row);
+      });
+    }
+
+    function setsToText(sets) {
+      return sets
+        .map((nums, i) => `${i + 1}세트: ${nums.join(", ")}`)
+        .join("\n");
+    }
+
+    btnPick.addEventListener("click", () => {
+      const count = Number(setCount.value);
+      lastSets = pickSets(count);
+      renderSets(lastSets);
+      lastTime.textContent = formatTime();
+      countBadge.textContent = `${count}세트`;
+      btnCopy.disabled = false;
+      copyStatus.textContent = "";
+      btnCopy.textContent = "전체 복사";
+    });
+
+    btnCopy.addEventListener("click", async () => {
+      if (!lastSets) return;
+      const text = setsToText(lastSets);
+      try {
+        await navigator.clipboard.writeText(text);
+        copyStatus.textContent = "추첨 결과가 클립보드에 복사되었습니다.";
+        btnCopy.textContent = "복사됨";
+        setTimeout(() => (btnCopy.textContent = "전체 복사"), 900);
+      } catch (e) {
+        alert("복사가 실패했습니다. 아래 내용을 직접 복사하세요.\n\n" + text);
+      }
+    });
+
+    btnReset.addEventListener("click", () => {
+      lastSets = null;
+      setsEl.innerHTML = "";
+      setsEl.appendChild(placeholder);
+      lastTime.textContent = "-";
+      countBadge.textContent = "0세트";
+      btnCopy.disabled = true;
+      btnCopy.textContent = "전체 복사";
+      copyStatus.textContent = "";
+    });
+  </script>
+</body>
+</html>
