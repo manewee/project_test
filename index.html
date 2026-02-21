@@ -180,13 +180,18 @@
       font-size:13px;
       color:var(--muted);
     }
-    select, input[type="number"]{
+    select, input[type="number"], input[type="text"], input[type="email"], input[type="tel"], textarea{
       padding:10px 12px;
       border-radius:12px;
       border:1px solid var(--input-border);
       background:var(--input-bg);
       font-weight:600;
       color:var(--text);
+    }
+    textarea{
+      min-height:100px;
+      resize:vertical;
+      font-family:inherit;
     }
     .btn-row{
       display:flex;
@@ -224,6 +229,34 @@
       color:var(--muted);
       line-height:1.5;
     }
+    .partner-box{
+      margin-top:4px;
+      padding-top:14px;
+      border-top:1px dashed var(--input-border);
+      display:grid;
+      gap:10px;
+    }
+    .partner-box h3{
+      margin:0;
+      font-size:16px;
+      color:var(--ink);
+    }
+    .partner-form{
+      display:grid;
+      gap:10px;
+    }
+    .partner-grid{
+      display:grid;
+      gap:8px;
+    }
+    .partner-status{
+      min-height:18px;
+      margin:0;
+      font-size:12px;
+      color:var(--muted);
+    }
+    .partner-status.success{color:#1f9d66}
+    .partner-status.error{color:#d64545}
     .result-board{
       background:var(--result-bg);
       color:var(--result-text);
@@ -357,6 +390,32 @@
           <p class="note">
             무작위 알고리즘으로 숫자를 선택합니다. 특정 번호의 출현을 보장하지 않으며, 실제 로또 결과와 무관합니다.
           </p>
+
+          <section class="partner-box" aria-label="제휴 문의">
+            <h3>제휴 문의</h3>
+            <p class="note">아래 폼으로 제휴 제안을 보내주세요. 확인 후 이메일로 답변드립니다.</p>
+            <form id="partnerForm" class="partner-form" action="https://formspree.io/f/xqedyaad" method="POST">
+              <input type="hidden" name="_subject" value="로또번호 추첨소 제휴 문의" />
+              <div class="partner-grid">
+                <label for="partnerName">담당자 이름</label>
+                <input id="partnerName" name="name" type="text" placeholder="홍길동" required />
+              </div>
+              <div class="partner-grid">
+                <label for="partnerEmail">이메일</label>
+                <input id="partnerEmail" name="email" type="email" placeholder="name@example.com" required />
+              </div>
+              <div class="partner-grid">
+                <label for="partnerCompany">회사명</label>
+                <input id="partnerCompany" name="company" type="text" placeholder="회사명을 입력하세요" required />
+              </div>
+              <div class="partner-grid">
+                <label for="partnerMessage">문의 내용</label>
+                <textarea id="partnerMessage" name="message" placeholder="제휴 목적, 예상 일정, 연락처를 적어주세요." required></textarea>
+              </div>
+              <button id="btnPartnerSubmit" class="secondary" type="submit">문의 보내기</button>
+              <p id="partnerStatus" class="partner-status" aria-live="polite"></p>
+            </form>
+          </section>
         </div>
       </section>
 
@@ -416,6 +475,9 @@
     const setCount = document.getElementById("setCount");
     const countBadge = document.getElementById("countBadge");
     const themeToggle = document.getElementById("themeToggle");
+    const partnerForm = document.getElementById("partnerForm");
+    const partnerStatus = document.getElementById("partnerStatus");
+    const btnPartnerSubmit = document.getElementById("btnPartnerSubmit");
 
     let lastSets = null;
 
@@ -505,6 +567,35 @@
     themeToggle.addEventListener("click", () => {
       const current = document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
       applyTheme(current === "dark" ? "light" : "dark");
+    });
+
+    partnerForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      partnerStatus.textContent = "문의 전송 중...";
+      partnerStatus.className = "partner-status";
+      btnPartnerSubmit.disabled = true;
+
+      try {
+        const response = await fetch(partnerForm.action, {
+          method: "POST",
+          body: new FormData(partnerForm),
+          headers: { Accept: "application/json" }
+        });
+
+        if (response.ok) {
+          partnerStatus.textContent = "문의가 접수되었습니다. 빠르게 확인 후 답변드리겠습니다.";
+          partnerStatus.className = "partner-status success";
+          partnerForm.reset();
+        } else {
+          partnerStatus.textContent = "전송에 실패했습니다. 잠시 후 다시 시도해 주세요.";
+          partnerStatus.className = "partner-status error";
+        }
+      } catch (error) {
+        partnerStatus.textContent = "네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.";
+        partnerStatus.className = "partner-status error";
+      } finally {
+        btnPartnerSubmit.disabled = false;
+      }
     });
   </script>
 </body>
